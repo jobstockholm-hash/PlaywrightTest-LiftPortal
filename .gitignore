@@ -1,0 +1,60 @@
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Pytest
+.pytest_cache/
+.cache/
+
+# ==========================
+# Environment Variables
+# ==========================
+.env
+.env.*
+
+# ==========================
+# Reports & Test Artifacts
+# ==========================
+reports/
+screenshots/
+playwright-report/
+test-results/
+*.html
+
+# ==========================
+# Coverage
+# ==========================
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# ==========================
+# IDE / Editor
+# ==========================
+.vscode/
+.idea/
+
+# ==========================
+# MacOS
+# ==========================
+.DS_Store
+
+# ==========================
+# Logs
+# ==========================
+*.log
+
+# ==========================
+# Temporary Files
+# ==========================
+*.tmp
+*.swp
