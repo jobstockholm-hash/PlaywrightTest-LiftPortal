@@ -8,8 +8,8 @@ Playwright + Python + pytest automation suite for **https://lift-dev.training**.
 
 ```bash
 # 1. Clone
-git clone https://github.com/your-org/laerdal-lift-tests.git
-cd laerdal-lift-tests
+git clone https://github.com/jobstockholm-hash/PlaywrightTest-LiftPortal.git
+cd PlaywrightTest-LiftPortal
 
 # 2. Virtual environment
 python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
@@ -90,17 +90,6 @@ pytest tests/test_lift_portal.py::TestLogin
 pytest tests/test_lift_portal.py::TestUserList
 pytest tests/test_lift_portal.py::TestBulkUpload
 
-# Watch the browser (great for debugging)
-HEADLESS=false pytest
-
-# Slow motion – easy to follow for demos
-HEADLESS=false SLOW_MO=600 pytest
-
-# Run only smoke tests
-pytest -m smoke
-
-# Stop at first failure
-pytest -x
 ```
 
 ---
@@ -147,84 +136,3 @@ FAIL__test_login_within_5_seconds__20240601_143512.png   ← failure
 Screenshots are **embedded** in `reports/test_report.html`.
 
 ---
-
-## CI/CD (GitHub Actions)
-
-Add these three **repository secrets** (Settings → Secrets → Actions):
-
-| Secret | Value |
-|---|---|
-| `BASE_URL` | `https://lift-dev.training` |
-| `ADMIN_USERNAME` | *(admin email)* |
-| `ADMIN_PASSWORD` | *(admin password)* |
-
-The workflow runs on every push, every PR to `main`, and every weekday at 06:00 UTC.
-The HTML report + screenshots are uploaded as a workflow artifact (30-day retention).
-
----
-
-## If tests fail: fixing selectors
-
-The portal is a React SPA — its class names can change after a frontend update.
-**Selectors live in one place per page** (`pages/*.py`), so a single edit fixes all tests.
-
-### Step-by-step debugging workflow
-
-1. **Run with a visible browser to see what's happening:**
-   ```bash
-   HEADLESS=false SLOW_MO=500 pytest tests/test_lift_portal.py::TestLogin -s
-   ```
-
-2. **Open Playwright's interactive inspector to find the right selector:**
-   ```bash
-   python3 -c "
-   from playwright.sync_api import sync_playwright
-   with sync_playwright() as p:
-       b = p.chromium.launch(headless=False)
-       page = b.new_page()
-       page.goto('https://lift-dev.training/login')
-       input('Press Enter to close...')
-   "
-   ```
-   Then right-click any element in the browser → Inspect → note the `id`, `name`,
-   `data-testid`, or `aria-label`.
-
-3. **Update the selector constant in the relevant page file**, e.g.:
-   ```python
-   # pages/login_page.py
-   @property
-   def _username_input(self):
-       return self.page.locator('#username')   # ← your discovered selector
-   ```
-
-4. **Re-run the test** — the fix propagates to all tests automatically.
-
-### Common selector patterns for the LIFT portal
-
-The LIFT portal uses standard semantic HTML and ARIA attributes.  Prefer:
-
-```python
-page.get_by_role("button", name="Sign in")          # buttons
-page.get_by_label("Username or email address")       # inputs
-page.get_by_role("link", name="Users")               # nav links
-page.get_by_role("row")                              # table rows
-page.locator('[data-testid="..."]')                  # if data-testid exists
-```
-
-### Test #3 CSV columns
-
-If bulk upload fails with a validation error, download the portal's own
-CSV template (usually a link in the upload dialog) and update
-`utils/csv_generator.py` to match its exact column names.
-
----
-
-## Extending the suite
-
-1. Add a new file `pages/my_feature_page.py` (copy an existing one).
-2. Add a test class in `tests/test_lift_portal.py` (or a new `test_*.py` file).
-3. Selectors are isolated — tests never reference CSS or XPath directly.
-
----
-
-*Developed for Laerdal Medical – LIFT Portal Test Automation.*
